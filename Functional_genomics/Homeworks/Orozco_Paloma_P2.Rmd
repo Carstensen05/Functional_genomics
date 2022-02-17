@@ -1,0 +1,366 @@
+---
+title: "Homework # 2"
+author: "Orozco Carstensen Ana Paloma"
+date: "2/17/2022"
+output: html_document
+---
+<style type = "text / css">
+  body {
+    font-family: Arial;
+  font-size: 10pt;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## **Problem # 1**
+
+Consider the following quantities, discuss and justify what type of probability distribution the following variables can have.
+
+**a.** The size of adult male footwear in Mexico.
+
+    Answer: Normal or unimodal distribution. Because there are very few with very small or very large sizes, almost all of them will be distributed around the average.
+
+**b.** The distribution of inhabitants in human settlements in Mexico.
+
+    Answer: Normal or unimodal distribution. Because hardly anyone lives in isolation; almost all of them are distributed around the average, in groups of neither many nor few houses.
+
+**c.** The average speed of cars in Bernardo Quintana at 09:00am on a weekday.
+
+    Answer: Normal or unimodal distribution. Because it's going to be almost impossible to go too fast or too slow; almost all of them are going to be distributed around the average (which is not going to be very fast, haha).
+
+**d.** The average speed of cars in Bernardo Quintana at 03:00am.
+
+    Answer: Definitely long tail. Most are going to go very fast and very few are going to go slow, they would not be distributed around the average.
+
+
+## **Problem # 2** 
+
+Let's suppose that we have 2 nodes (A and B) in a network. Node A and B have the same degree, but node A has a clustering coefficient of 1 and node B, low. Draw this situation and explain what would be a better target if you want to eliminate them and affect the network.
+
+First, the draw: 
+
+
+```{r echo=FALSE}
+library(knitr)
+library(png)
+enfj_path<-"/Users/carstensen/Desktop/Desktop - Ana’s MacBook Pro/Sexto semestre/Functional_genomics/Homeworks/Image.png"
+include_graphics(enfj_path)
+```
+
+
+    Discussion: In the case that the network looks like the draw, the better target would be the node connecting both nodes, A and B. In the case that there are more nodes and clusters and both A and B are not connected to the same node (in the draw: not completed purple lines), the better target would be node A, because it would be a hub. 
+
+## **Problem # 3** 
+
+Write a program in R that, using functions, calculates from an adjacency matrix:
+
+First, load a matrix to test the functions: 
+
+
+
+```{r}
+Friends_Network <- read.csv ("Data/Friends_NW.csv") # Load data 
+row.names (Friends_Network) <- Friends_Network [ , 1] # Take the first column and make it the row names
+Friends_Network <- Friends_Network [ , -1] # Take first column
+as.matrix (Friends_Network) # Make it matrix
+```
+
+**a.** Whether it is directed or not.
+
+    If its not directed, the matrix should be symmetric
+
+First, assign the main values 
+
+```{r}
+i = 0 # Assign the value of i 
+j = 0 # Assign the value of j
+Directed_Network <- c () # Create a vector to save the outputs
+```
+
+Then, create a loop for 
+
+```{r}
+for (i in 1 : nrow (Friends_Network)){ # For i in 1 to the number of rows in the matrix
+  for (j in 1 : ncol (Friends_Network)){ # For j in 1 to the number of columns in the matrix
+    Directed_Network <- c (Directed_Network, Friends_Network [i, j] != Friends_Network [j, i]) # On the vector, assign TRUE values if its the exact same; FALSE, if not 
+  }
+}
+
+Directed_Network # Print 
+```
+
+Finally, check if all the values are TRUE, which would mean that the matrix is symmetric
+
+```{r}
+all (Directed_Network) # Are all the values true ? 
+```
+    
+    False, it is directed
+
+
+**b.** Whether it is weighted or not.
+
+    If it is weighted, there will be values > 1
+
+```{r}
+any (Friends_Network > 1) # Any of the values are > 1 ?
+```
+
+    False, it is not weighted
+
+
+
+**c.** The degree of the nodes.
+
+First, assign the main values 
+
+```{r}
+i = 0 # Assign the value of i 
+In_Degrees_FN <- c () # Create a vector to save the outputs
+```
+
+Then, create a loop for 
+
+```{r}
+for (i in 1 : nrow (Friends_Network)){ # For i in 1 to the number of rows in the matrix
+  In_Degrees_FN <- c (In_Degrees_FN, sum (Friends_Network [i , ])) # On the vector, save the sums of the rows, one by one
+}
+
+In_Degrees_FN # Print 
+``` 
+
+
+**d.** The histogram of the degree.
+
+``` {r}
+hist (In_Degrees_FN, main = "Histogram of degree distribution", xlab = "In degrees") # Create the histogram
+``` 
+
+
+## **Problem # 4** 
+
+From the protein interaction network called “yeast”, write a program in R that:
+
+**a.** Calculate the distribution of connectivities and plot that distribution.
+
+First, load the data:
+
+```{r}
+library (igraph) # Load library 
+
+library (igraphdata) # Load library 
+
+data ("yeast") # Load data
+
+```
+
+Then, calculate the degrees and degree distribution:
+
+```{r}
+Yeast_Degree <- degree (yeast) # Check the degrees
+head (Yeast_Degree) # Only look at the first ones
+
+Yeast_D_D <- degree_distribution (yeast) # Check the degree distribution
+Yeast_D_D # Print
+```
+
+Finally, the plot: 
+
+``` {r}
+plot (degree_distribution (yeast), main = "Degree distribution", xlab = "Degree", ylab = "Frequency") # Plot
+```
+   
+    Discussion: It is definetely a long tail network, a lot of the nodes have a few connections, but a few nodes have a lot connections. 
+
+
+**b.** Plot the boxplot of the connectivity distribution and discuss the result.
+
+```{r}
+Boxplot_DD_Y <- boxplot (Yeast_D_D, main = "Degree distribution") # Make the boxplot
+```
+
+    Discussion: It is long tail because almost all the nodes have a few connections (median inside de box) and just a few, a lot. The distribution is not normal. 
+
+**c.** Find the proportion of nodes that have 15 or more connectivities.
+
+First, find the length of all the data:
+
+```{r}
+Length_D <- length (Yeast_Degree) # Find the length of the complete data
+Length_D # Print
+```
+
+Then, find which nodes have 15 or more connections and the total of those nodes:
+
+```{r}
+More_15 <- which (Yeast_Degree >= 15) # Find which nodes have 15 or more connections (the numbers are the position, not the connections)
+More_15 # Print
+
+Length_15 <- length (More_15) # Find the length of the nodes that have 15 or more connections
+Length_15 # Print
+```
+
+Finally, calculate the proportion: 
+
+```{r}
+Proportion_15 <- (Length_15 * 100) / Length_D # Calculate the proportion
+Proportion_15 # Print
+```
+
+
+**d.** Calculate the maximum degree of the network.
+
+```{r}
+Max_Degree <- max (Yeast_Degree) # Obtain the maximum degree
+Max_Degree # Print
+```
+
+**e.** Calculate the diameter.
+
+```{r}
+Diameter_Y <- diameter (yeast) # Calculate the diameter 
+Diameter_Y # Print
+```
+
+**f.** The longest path.
+
+```{r}
+Longest_Path_Y <- get_diameter(yeast) # Obtain the longest path (15)
+Longest_Path_Y # Print
+```
+
+    The longest path is: YPL259C YPR029C YLR170C YGL206C YER177W YDR028C YGL115W YDR422C YHR114W YBL007C YNL271C YLR190W YIL050W YPL031C YER059W YDL224C, with 16 proteins, 15 steps
+
+
+**g.** Remove the 10 most connected nodes of the network and determine the diameter each time you do so.
+
+First, assign the main values: 
+
+```{r}
+i = 0 # Assign the value of i 
+First_10 <- sort (Yeast_Degree, decreasing = TRUE) [1:10]  # Sort and select the first 10 nodes (the ones with more connections)
+First_10 # Print
+Diameter_Yeast <- c () # Create a vector to save the diameters 
+```
+
+Then, create a loop for: 
+
+```{r}
+for (i in 1 : 10) { # For i in 1 to 10
+  Diameter_Yeast [i] <- diameter (yeast) # Calculate the diameter for network
+  yeast <- delete_vertices (yeast, sample (First_10 [i])) # Delete the node corresponding to i 
+}
+```
+
+Finally, obtain the diameters on the vector: 
+
+```{r}
+print (Diameter_Yeast) # Print
+```
+
+Reload the data, for further problems 
+
+```{r}
+data ("yeast") # Load data
+```
+
+**h.** Determine the ten most important nodes by at least 3 measures of centrality.
+
+1. Degree centrality 
+
+```{r}
+Y_Degree_centrality <- degree (yeast) # Calculate the degree of the network
+sort (Y_Degree_centrality, decreasing = TRUE) [1:10] # Order the data
+```
+
+    Discussion: Those are the 10 most important proteins. It is because those proteins are the ones with more connections. 
+
+
+2. Eigenvector centrality
+
+```{r}
+Y_Eigenvector_Centrality <- eigen_centrality (yeast) # Calculate the eigenvector centrality of the network
+sort (Y_Eigenvector_Centrality $ vector, decreasing = TRUE) [1:10] # Order the data
+```
+
+    Discussion: Those are the 10 most important proteins. It is because those proteins are the ones with more influence on the network
+
+
+3. Closness centrality 
+
+```{r}
+Y_Closness_centrality <- closeness (yeast) # Calculate the closness centrality of the network
+sort (Y_Closness_centrality, decreasing = TRUE) [1:10] # Order the data
+``` 
+  
+    Discussion: Those are the 10 most important proteins. It is because those proteins are the closest to other nodes
+
+
+**i.** Cluster the network by at least two methods and determine the size of the largest cluster.
+
+1. Cluster by community structure detecting based on the leading eigenvector of the community matrix
+
+First, create the clusters:
+
+```{r}
+Cluster_LE_Y <- cluster_leading_eigen (yeast) # Create the cluster
+Cluster_LE_Y # Print
+```
+
+Then, obtain the information:
+
+```{r}
+membership (Cluster_LE_Y) # Obtain which member are in which clusters
+table (membership (Cluster_LE_Y)) # Obtain the number of members by clusters
+
+sort (table (membership (Cluster_LE_Y)), decreasing = TRUE) # Sort the members of the cluster 
+```
+
+    The larger cluster is cluster number 96, which has 1,483 proteins
+
+
+2. Cluster via greedy optimization of modularity 
+
+First, create the clusters:
+
+```{r}
+Cluster_FG_Y <- cluster_fast_greedy (yeast) # Create the cluster
+Cluster_FG_Y# Print
+```
+
+Then, obtain the information:
+
+```{r}
+membership (Cluster_FG_Y) # Obtain which member are in which clusters
+table (membership (Cluster_FG_Y)) # Obtain the number of members by clusters
+
+sort (table (membership (Cluster_FG_Y)), decreasing = TRUE) # Sort the members of the cluster 
+```
+
+    The larger cluster is cluster number 1, which has 744 proteins
+
+Finally, compare the clusters:
+
+```{r}
+Comparation <- compare (Cluster_LE_Y, Cluster_FG_Y, method = "adjusted.rand") # Compare clusters
+Comparation # Print
+```
+
+    0.1601622 = not similar
+
+
+**j.** Determine if the network is small world, ultra small world, or other.
+
+Create an histogram to see the distribution of the nodes and their conections 
+
+```{r}
+hist (Yeast_D_D) # Create histogram
+```
+    
+    Discussion: it is definetely long-tail: almost all of the nodes have 0.0 - 0.0 5% conections, while only over 1-3, have 0.25 - 0.30 % conections. If it were small-world, there would be a high local clustering, like all nodes connected to all nodes. 
+
+
+
